@@ -1,0 +1,15 @@
+{
+  "name": "ent-trainer",
+  "version": "1.0.0",
+  "description": "Интерактивное веб-приложение для подготовки к ЕНТ (Казахстан)",
+  "type": "module",
+  "scripts": {
+    "start": "npx serve -s -p 3000 .",
+    "dev": "npx serve -s -p 3000 .",
+    "build": "node build-all-variants.js",
+    "verify": "node verify-data.js"
+  },
+  "dependencies": {
+    "katex": "^0.16.11"
+  }
+}

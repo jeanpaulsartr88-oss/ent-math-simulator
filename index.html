@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ҰБТ / ЕНТ Онлайн-тестирование — UStudy / НЦТ РК</title>
+
+  <!-- Local KaTeX with CDN fallback -->
+  <link rel="stylesheet" href="./lib/katex/katex.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css';">
+  <script defer src="./lib/katex/katex.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js';"></script>
+  <script defer src="./lib/katex/contrib/auto-render.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js';"></script>
+
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- ======================================================================
+       HEADER: USTUDY / NTC BAR
+       ====================================================================== -->
+  <header class="ustudy-header">
+    <div class="header-top">
+      <div class="brand-section">
+        <div class="brand-emblem">ҰБТ</div>
+        <div class="brand-text">
+          <h1>
+            <span>ОНЛАЙН-ТЕСТИРОВАНИЕ</span>
+            <span class="brand-badge">НЦТ РК</span>
+          </h1>
+          <p>UStudy • Единое Национальное Тестирование Республики Казахстан</p>
+        </div>
+      </div>
+
+      <!-- Center Countdown Timer -->
+      <div class="timer-container" id="timerContainer" title="Оставшееся время тестирования">
+        <span class="timer-icon">⏳</span>
+        <span class="timer-digits" id="timerDigits">01:50:00</span>
+      </div>
+
+      <!-- Action Tools -->
+      <div class="header-actions">
+        <button class="btn-header-tool" id="btnToggleCalc" title="Открыть встроенный калькулятор">
+          <span>🧮</span>
+          <span>Калькулятор</span>
+        </button>
+
+        <button class="btn-header-tool" id="btnToggleFormulas" title="Справочные формулы">
+          <span>📖</span>
+          <span>Справочник формул</span>
+        </button>
+
+        <button class="btn-finish-test" id="btnFinishTest" title="Завершить тестирование и проверить ответы">
+          <span>🏁</span>
+          <span>Завершить тест</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Subbar: Variant switcher & Subject meta -->
+    <div class="header-subbar">
+      <div class="variant-picker">
+        <span>Вариант:</span>
+        <button class="variant-pill active" data-variant="1">Вариант 1 (Официальный НЦТ)</button>
+        <button class="variant-pill" data-variant="2">Вариант 2 (Тренировочный)</button>
+        <button class="variant-pill" data-variant="3">Вариант 3 (Диагностический)</button>
+      </div>
+
+      <div class="subbar-info">
+        <span>Предмет: <strong>Матграмотность (1–10) + Математика (11–50)</strong></span>
+        <span>Всего: <strong>50 заданий / 60 баллов</strong></span>
+        <button class="btn-reset-attempt" id="btnResetAttempt" title="Сбросить прогресс текущего варианта">Сбросить попытку ↺</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       MAIN CONTENT: TESTING INTERFACE
+       ====================================================================== -->
+  <main class="app-container" id="testingInterface">
+    
+    <!-- LEFT: Question Work Area -->
+    <section class="question-pane" id="questionPane">
+      <!-- Question meta bar -->
+      <div class="question-header-bar">
+        <div class="q-meta-left">
+          <div class="q-number-title" id="qNumberTitle">Вопрос № 1 из 50</div>
+          <span class="badge-block badge-literacy" id="qBlockBadge">Блок I. Матграмотность</span>
+          <span class="badge-type" id="qTypeBadge">Один правильный ответ</span>
+          <span class="badge-points" id="qPointsBadge">1 балл</span>
+        </div>
+
+        <div class="q-meta-right">
+          <!-- Text size -->
+          <div class="font-size-controls" title="Масштаб шрифта">
+            <button class="btn-font-size" id="btnFontSmaller">A−</button>
+            <button class="btn-font-size" id="btnFontBigger">A+</button>
+          </div>
+
+          <!-- Bookmark toggle -->
+          <button class="btn-bookmark-toggle" id="btnBookmarkToggle" title="Пометить вопрос для повторной проверки">
+            ☆ В закладки
+          </button>
+        </div>
+      </div>
+
+      <!-- Question main body -->
+      <div class="question-body">
+        <!-- Context block (Tasks 36-40) -->
+        <div id="contextContainer" style="display: none;"></div>
+
+        <!-- Question text -->
+        <div class="question-text" id="questionText">
+          Загрузка задания...
+        </div>
+
+        <!-- Answers interaction container -->
+        <div id="answersContainer"></div>
+      </div>
+
+      <!-- Question navigation footer -->
+      <div class="question-footer-bar">
+        <div class="nav-buttons-left">
+          <button class="btn-nav btn-nav-prev" id="btnNavPrev" disabled>
+            ← Предыдущий
+          </button>
+          <button class="btn-clear-answer" id="btnClearAnswer">
+            Очистить ответ
+          </button>
+        </div>
+
+        <div class="nav-buttons-right">
+          <button class="btn-nav btn-nav-next" id="btnNavNext">
+            Далее →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Question Navigation Sidebar -->
+    <aside class="sidebar-pane">
+      <div class="sidebar-card">
+        <div class="sidebar-header">
+          <span>Навигация по тесту</span>
+          <span style="font-size: 12px; color: #64748b; font-weight: 500;">50 заданий</span>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend-grid">
+          <div class="legend-item"><span class="legend-indicator legend-unanswered"></span> Не отвечен</div>
+          <div class="legend-item"><span class="legend-indicator legend-active"></span> Текущий</div>
+          <div class="legend-item"><span class="legend-indicator legend-answered"></span> Отвечен</div>
+          <div class="legend-item"><span class="legend-indicator legend-bookmark"></span> В закладках</div>
+        </div>
+
+        <!-- Section 1: Math Literacy (1-10) -->
+        <div class="grid-section-title">
+          <span>Блок I. Матграмотность</span>
+          <span style="color: #2563eb;">1–10</span>
+        </div>
+        <div class="questions-grid" id="gridBlock1"></div>
+
+        <!-- Section 2: Profile Math (11-50) -->
+        <div class="grid-section-title">
+          <span>Блок II. Профильная математика</span>
+          <span style="color: #7c3aed;">11–50</span>
+        </div>
+        <div class="questions-grid" id="gridBlock2"></div>
+
+        <!-- Progress stats -->
+        <div class="progress-stats-box">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBarFill"></div>
+          </div>
+          <div class="progress-text">
+            <span>Отвечено: <strong id="statAnsweredCount">0 / 50</strong></span>
+            <span>В закладках: <strong id="statBookmarksCount">0</strong></span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- ======================================================================
+       RESULTS SCREEN
+       ====================================================================== -->
+  <section class="results-container" id="resultsContainer">
+    <!-- Hero card -->
+    <div class="results-hero-card">
+      <div class="hero-left">
+        <h2>🎉 Тестирование завершено!</h2>
+        <p>Ваши ответы проверены и сопоставлены с официальными ключами НЦТ РК.</p>
+        <div class="pass-status-pill pass-passed" id="resPassPill">✓ Пороговый балл преодолён</div>
+      </div>
+
+      <div class="hero-score-badge">
+        <div class="score-circle">
+          <span class="score-number" id="resScoreNum">0</span>
+          <span class="score-max" id="resScoreMax">из 60 баллов</span>
+        </div>
+        <div class="score-meta">
+          <div class="score-meta-item">Правильных заданий: <strong id="resCorrectQuestions">0 из 50</strong></div>
+          <div class="score-meta-item">Затраченное время: <strong id="resTimeSpent">0 мин</strong></div>
+          <div class="score-meta-item">Шкала: <strong>НЦТ (60 баллов)</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category breakdown cards -->
+    <div class="results-blocks-grid">
+      <div class="res-block-card">
+        <div class="res-block-title">Блок I. Математическая грамотность</div>
+        <div class="res-block-score" id="resLiteracyScore">0 / 10</div>
+        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">Пороговый балл: 3 балла</div>
+      </div>
+
+      <div class="res-block-card">
+        <div class="res-block-title">Блок II. Профильная математика</div>
+        <div class="res-block-score" id="resProfileScore">0 / 50</div>
+        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">Пороговый балл: 5 баллов</div>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="result-filters-bar">
+      <h3 style="font-size: 18px; font-weight: 700; color: #0f172a;">Детализация ответов и решения:</h3>
+      <div class="filter-pills-group">
+        <button class="filter-pill-btn active" data-filter="all">Все (50)</button>
+        <button class="filter-pill-btn" data-filter="correct">Верные ✓</button>
+        <button class="filter-pill-btn" data-filter="partial">Частично ½</button>
+        <button class="filter-pill-btn" data-filter="incorrect">Неверные ✗</button>
+        <button class="filter-pill-btn" data-filter="skipped">Пропущенные —</button>
+      </div>
+    </div>
+
+    <!-- Detailed questions list -->
+    <div class="review-questions-list" id="reviewQuestionsList"></div>
+
+    <!-- Actions bottom bar -->
+    <div class="results-action-bar">
+      <button class="btn-result-action btn-action-retry" id="btnRetryVariant">
+        <span>↺</span>
+        <span>Пройти этот вариант заново</span>
+      </button>
+
+      <button class="btn-result-action btn-action-next" id="btnNextVariant">
+        <span>➡️</span>
+        <span>Следующий вариант</span>
+      </button>
+
+      <button class="btn-result-action btn-action-print" id="btnPrintResults">
+        <span>🖨️</span>
+        <span>Распечатать / Сохранить в PDF</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       POPUP: DRAGGABLE CALCULATOR
+       ====================================================================== -->
+  <div class="calculator-floating" id="floatingCalc">
+    <div class="calc-header" id="calcHeader">
+      <span>🧮 Инженерный калькулятор</span>
+      <button class="btn-close-modal" id="btnCloseCalc" style="color: #94a3b8;">✕</button>
+    </div>
+
+    <div class="calc-screen">
+      <div class="calc-prev-expr" id="calcPrevExpr"></div>
+      <div class="calc-curr-val" id="calcCurrVal">0</div>
+    </div>
+
+    <div class="calc-angle-toggle">
+      <button class="calc-angle-btn active" id="btnDeg">DEG</button>
+      <button class="calc-angle-btn" id="btnRad">RAD</button>
+    </div>
+
+    <div class="calc-pad">
+      <!-- Functions -->
+      <button class="btn-calc btn-calc-fn" data-action="sin">sin</button>
+      <button class="btn-calc btn-calc-fn" data-action="cos">cos</button>
+      <button class="btn-calc btn-calc-fn" data-action="tan">tg</button>
+      <button class="btn-calc btn-calc-clear" data-action="clear">AC</button>
+
+      <button class="btn-calc btn-calc-fn" data-action="sqrt">√x</button>
+      <button class="btn-calc btn-calc-fn" data-val="^">xʸ</button>
+      <button class="btn-calc btn-calc-fn" data-val="^2">x²</button>
+      <button class="btn-calc btn-calc-clear" data-action="backspace">⌫</button>
+
+      <button class="btn-calc btn-calc-fn" data-action="log">log</button>
+      <button class="btn-calc btn-calc-fn" data-action="ln">ln</button>
+      <button class="btn-calc btn-calc-fn" data-val="(">(</button>
+      <button class="btn-calc btn-calc-fn" data-val=")">)</button>
+
+      <button class="btn-calc btn-calc-fn" data-val="3.14159265">π</button>
+      <button class="btn-calc btn-calc-fn" data-val="2.71828182">e</button>
+      <button class="btn-calc btn-calc-fn" data-val="%">%</button>
+      <button class="btn-calc btn-calc-op" data-val="÷">÷</button>
+
+      <!-- Digits -->
+      <button class="btn-calc" data-val="7">7</button>
+      <button class="btn-calc" data-val="8">8</button>
+      <button class="btn-calc" data-val="9">9</button>
+      <button class="btn-calc btn-calc-op" data-val="×">×</button>
+
+      <button class="btn-calc" data-val="4">4</button>
+      <button class="btn-calc" data-val="5">5</button>
+      <button class="btn-calc" data-val="6">6</button>
+      <button class="btn-calc btn-calc-op" data-val="-">−</button>
+
+      <button class="btn-calc" data-val="1">1</button>
+      <button class="btn-calc" data-val="2">2</button>
+      <button class="btn-calc" data-val="3">3</button>
+      <button class="btn-calc btn-calc-op" data-val="+">+</button>
+
+      <button class="btn-calc" data-val="0">0</button>
+      <button class="btn-calc" data-val=".">.</button>
+      <button class="btn-calc btn-calc-eq" data-action="eval">=</button>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL: FORMULA HANDBOOK
+       ====================================================================== -->
+  <div class="modal-backdrop" id="formulaModalBackdrop">
+    <div class="modal-window formula-modal-window">
+      <div class="modal-header">
+        <div class="modal-title">📖 Справочник математических формул ЕНТ</div>
+        <button class="btn-close-modal" id="btnCloseFormulas">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Search bar -->
+        <div class="formula-search-bar">
+          <span>🔍</span>
+          <input type="text" class="formula-search-input" id="formulaSearchInput" placeholder="Поиск формулы (например: Виета, косинус, интеграл, пирамида)...">
+        </div>
+
+        <!-- Category tabs -->
+        <div class="formula-tabs">
+          <button class="formula-tab-btn active" data-cat="all">Все формулы</button>
+          <button class="formula-tab-btn" data-cat="algebra">Алгебра и прогрессии</button>
+          <button class="formula-tab-btn" data-cat="trig">Тригонометрия</button>
+          <button class="formula-tab-btn" data-cat="logs">Логарифмы и степени</button>
+          <button class="formula-tab-btn" data-cat="planimetry">Планиметрия</button>
+          <button class="formula-tab-btn" data-cat="stereometry">Стереометрия</button>
+          <button class="formula-tab-btn" data-cat="calculus">Начала анализа</button>
+        </div>
+
+        <!-- Formulas list -->
+        <div class="formula-section" id="formulaListContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL: FINISH CONFIRMATION
+       ====================================================================== -->
+  <div class="modal-backdrop" id="finishModalBackdrop">
+    <div class="modal-window" style="max-width: 460px;">
+      <div class="modal-header">
+        <div class="modal-title" style="color: #dc2626; display: flex; align-items: center; gap: 8px;">
+          <span>⚠️</span>
+          <span>Завершение тестирования</span>
+        </div>
+      </div>
+
+      <div class="modal-body" style="font-size: 15px;">
+        <p style="margin-bottom: 16px; color: #334155;">
+          Вы уверены, что хотите завершить тестирование? После подтверждения ваш тест будет автоматически проверен, и вы увидите разбор каждого задания.
+        </p>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span>Отвечено заданий:</span>
+            <strong style="color: #16a34a;" id="modalStatAnswered">0</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Осталось без ответа:</span>
+            <strong style="color: #dc2626;" id="modalStatUnanswered">50</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Помечено в закладки:</span>
+            <strong style="color: #ca8a04;" id="modalStatBookmarked">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-nav btn-nav-prev" id="btnCancelFinish" style="padding: 8px 18px;">
+          Продолжить тест
+        </button>
+        <button class="btn-finish-test" id="btnConfirmFinish" style="padding: 8px 20px;">
+          Да, завершить!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Question Data & Main Application Logic -->
+  <script src="./questions.js"></script>
+  <script src="./app.js"></script>
+
+</body>
+</html>
